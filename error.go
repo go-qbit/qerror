@@ -1,24 +1,15 @@
 package qerror
 
 import (
-	"fmt"
-	"runtime"
-	"time"
 	"bytes"
+	"runtime"
 	"strconv"
+	"time"
 )
 
-type QBitError interface {
-	error
-	Stacktrace() []CallerInfo
-	Dt() time.Time
-}
-
-type qbitError struct {
-	dt          time.Time
-	message     string
-	messageArgs []interface{}
-	stacktrace  []CallerInfo
+type BaseError struct {
+	dt         time.Time
+	stacktrace []CallerInfo
 }
 
 type CallerInfo struct {
@@ -27,11 +18,9 @@ type CallerInfo struct {
 	FuncName string
 }
 
-func New(message string, a ...interface{}) QBitError {
-	e := &qbitError{
-		dt:          time.Now(),
-		message:     message,
-		messageArgs: a,
+func New(offset int) *BaseError {
+	e := &BaseError{
+		dt: time.Now(),
 	}
 
 	var (
@@ -39,7 +28,7 @@ func New(message string, a ...interface{}) QBitError {
 		ok   bool
 		info CallerInfo
 	)
-	for i := 1; ; i++ {
+	for i := 1 + offset; ; i++ {
 		pc, info.File, info.Line, ok = runtime.Caller(i)
 		if !ok {
 			break
@@ -56,10 +45,11 @@ func New(message string, a ...interface{}) QBitError {
 	return e
 }
 
-func (e *qbitError) Error() string {
+func (e *BaseError) Error() string {
 	buf := &bytes.Buffer{}
 
-	fmt.Fprintf(buf, e.message, e.messageArgs...)
+	buf.WriteString("DateTime: ")
+	buf.WriteString(e.dt.String())
 	buf.WriteString("\nStacktrace:")
 	for _, caller := range e.stacktrace {
 		buf.WriteByte('\n')
@@ -74,10 +64,10 @@ func (e *qbitError) Error() string {
 	return buf.String()
 }
 
-func (e *qbitError) Stacktrace() []CallerInfo {
+func (e *BaseError) Stacktrace() []CallerInfo {
 	return e.stacktrace
 }
 
-func (e *qbitError) Dt() time.Time {
+func (e *BaseError) Dt() time.Time {
 	return e.dt
 }
