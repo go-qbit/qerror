@@ -16,6 +16,11 @@ type publicError struct {
 }
 
 func ToPublic(err error, publicMessage string) PublicError {
+	perr, ok := err.(PublicError)
+	if ok {
+		return perr
+	}
+
 	return &publicError{err, publicMessage}
 }
 
