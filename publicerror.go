@@ -37,7 +37,9 @@ func (e *publicError) Error() string {
 }
 
 func (e *publicError) PublicError() string {
-	Logger.Print(e.err.Error())
+	if e.err != nil {
+		Logger.Print(e.err.Error())
+	}
 
 	return e.publicMessage
 }
