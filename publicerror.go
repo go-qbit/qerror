@@ -3,7 +3,15 @@ package qerror
 import (
 	"bytes"
 	"fmt"
+	"log"
+	"os"
 )
+
+type logger interface {
+	Print(v ...interface{})
+}
+
+var Logger logger = log.New(os.Stderr, "", log.LstdFlags)
 
 type PublicError interface {
 	error
@@ -29,6 +37,8 @@ func (e *publicError) Error() string {
 }
 
 func (e *publicError) PublicError() string {
+	Logger.Print(e.err.Error())
+
 	return e.publicMessage
 }
 
